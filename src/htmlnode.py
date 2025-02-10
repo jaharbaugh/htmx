@@ -14,6 +14,14 @@ class HTMLNode():
         if props_list != []:
             props_string = " "+" ".join(props_list)
         return props_string
+    def __eq__(self, other):
+        if not isinstance(other, HTMLNode):
+            return False
+        return (self.tag == other.tag and 
+            self.value == other.value and 
+            self.children == other.children and 
+            self.props == other.props)
+    
     def __repr__(self):
         return(f"tag={self.tag} value={self.value} children={self.children} props={self.props}")
     
@@ -27,8 +35,20 @@ class LeafNode(HTMLNode):
         if self.tag == None:
             return self.value
         return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
-        
-        
+
+class ParentNode(HTMLNode):
+    def __init__(self, tag, value=None, children=None, props=None):
+        super().__init__(tag, None, children, props)        
+    def to_html(self):
+        if self.tag == None:
+            raise ValueError("Missing Tag")
+        if self.children == []:
+            raise ValueError("Missing Children")
+        string= f"<{self.tag}{self.props_to_html()}>"
+        for child in self.children:
+             string += child.to_html()
+        return string+f"</{self.tag}>"
+
 
         
         

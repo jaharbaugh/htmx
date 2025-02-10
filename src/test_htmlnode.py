@@ -35,4 +35,24 @@ class TestLeafNode(unittest.TestCase):
     def test_value_none(self):
         node = LeafNode('p', None)
         with self.assertRaises(ValueError):
-            node.to_html()    
+            node.to_html()
+
+class TestParentNode(unittest.TestCase):
+    def test_noTag(self):
+        node = ParentNode(None, children=[LeafNode("b", "Bold text")], props=None)
+        with self.assertRaises(ValueError) as e:
+            node.to_html()
+            self.assertEqual(str(e.exception), "Missing Tag")
+    def test_one_child(self):
+        node = ParentNode('p', children=[LeafNode("b", "bold text")])
+        self.assertEqual(node.to_html(), "<p><b>bold text</b></p>")
+    def test_many_children(self):
+        node = ParentNode('p', children=[LeafNode('b', "bold text"), LeafNode(None,"normal text"), LeafNode('i', "italic text"), LeafNode(None, "normal text")])
+        self.assertEqual(node.to_html(), '<p><b>bold text</b>normal text<i>italic text</i>normal text</p>')
+    def test_parent_in_parent(self):
+        node = ParentNode('p', children=[ParentNode('p', children=[LeafNode("b", "bold text")])])
+        self.assertEqual(node.to_html(), "<p><p><b>bold text</b></p></p>")
+    def test_children_none(self):
+        node =ParentNode('p', children=None)
+        with self.assertRaises(ValueError):
+            node.to_html()        
