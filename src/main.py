@@ -1,7 +1,16 @@
 from textnode import *
+from copy_static import *
+from generate_pages_recursive import *
+
+import os
+import shutil
+
 
 def main():
-    dummy = TextNode('hello world', TextType.BOLD, 'https://www.boot.dev')
-    print(dummy)
+    if os.path.exists('public'):
+        shutil.rmtree('public')
+
+    copy_static('static', 'public')
+    generate_pages_recursive('content', 'template.html', 'public' )
 
 main()    

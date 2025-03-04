@@ -4,24 +4,38 @@ from extractlinks import *
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_nodes = []
     
-    for node in old_nodes:
-        if node.text_type != TextType.TEXT:
-            new_nodes.append(node)
+    for old_node in old_nodes:
+        if old_node.text_type != TextType.TEXT:
+            new_nodes.append(old_node)
             continue
-        nodes = node.text.split(delimiter)
-        temp_nodes = []        
-        if len(nodes) % 2 == 0:
-            raise ValueError("Delimiters are unmatched")
-        for i, text in enumerate(nodes):
-            if i%2 == 0:
-                temp_nodes.append(TextNode(text, TextType.TEXT))
-            else:
-                temp_nodes.append(TextNode(text, text_type))
-
             
-        new_nodes.extend(temp_nodes)
-
+        text = old_node.text
+        
+        # Add the validation RIGHT HERE, before the split
+        if text.count(delimiter) % 2 != 0:
+            raise ValueError(f"Unmatched delimiter {delimiter}")
+        
+        segments = text.split(delimiter)
+        
+        # Rest of your code remains the same...
+        if len(segments) == 1:
+            new_nodes.append(old_node)
+            continue
+            
+        current_type = TextType.TEXT
+        for i, segment in enumerate(segments):
+            if segment == "":
+                continue
+                
+            if i % 2 == 0:
+                current_type = TextType.TEXT
+            else:
+                current_type = text_type
+                
+            new_nodes.append(TextNode(segment, current_type))
+            
     return new_nodes
+
 
 def split_nodes_link(old_nodes):
     new_nodes = []
@@ -34,7 +48,8 @@ def split_nodes_link(old_nodes):
         links = extract_markdown_links(node.text)
         
         if not links:
-            return [node]
+            new_nodes.append(node)
+            continue
         
         temp_nodes =[]
         curr_text = node.text
@@ -61,7 +76,8 @@ def split_nodes_image(old_nodes):
         images = extract_markdown_images(node.text)
         
         if not images:
-            return [node]
+            new_nodes.append(node)
+            continue
         
         temp_nodes =[]
         curr_text = node.text
@@ -76,3 +92,13 @@ def split_nodes_image(old_nodes):
             temp_nodes.append(TextNode(curr_text, TextType.TEXT))
         new_nodes.extend(temp_nodes)
     return new_nodes
+
+def text_to_textnodes(text):
+    nodes = [TextNode(text, TextType.TEXT)]
+    code = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    images = split_nodes_image(code)
+    links = split_nodes_link(images)
+    bold = split_nodes_delimiter(links, "**", TextType.BOLD)
+    italics = split_nodes_delimiter(bold, "*", TextType.ITALIC)
+    italics_underscore = split_nodes_delimiter(italics, "_", TextType.ITALIC)
+    return italics_underscore
