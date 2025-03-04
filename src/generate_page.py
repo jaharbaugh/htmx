@@ -2,7 +2,7 @@ import os
 from extract_title import *
 from markdowntohtmlnode import *
 
-def generate_page(from_path, template_path, destination):
+def generate_page(from_path, template_path, destination, BASEPATH='/'):
     print(f'Generating page from {from_path} to {destination} using {template_path}')
     
     with open(from_path, 'r') as file:
@@ -25,11 +25,10 @@ def generate_page(from_path, template_path, destination):
 
     final_html = template.replace('{{ Title }}', title)
     final_html = final_html.replace('{{ Content }}', html_content)
-
+    final_html = final_html.replace('href="/', f'href="{BASEPATH}')
+    final_html = final_html.replace('src="/', f'src="{BASEPATH}')
     os.makedirs(os.path.dirname(destination), exist_ok=True)
 
-    print("Debug - Content with '_didn't ruin it_':", "_didn't ruin it_" in html_content)
-    print("Debug - Content with '<i>didn't ruin it</i>':", "<i>didn't ruin it</i>" in html_content)
 
     with open(destination, 'w') as file:
         file.write(final_html)
